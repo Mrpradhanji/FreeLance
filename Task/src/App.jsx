@@ -120,6 +120,9 @@ export default function App() {
   const [form, setForm] = useState({ name: '', email: '', phone: '', service: '', message: '' });
   const handleFormChange = e => setForm({ ...form, [e.target.name]: e.target.value });
 
+  // Mobile menu state
+  const [menuOpen, setMenuOpen] = useState(false);
+
   return (
     <div className="relative bg-white min-h-screen flex flex-col font-sans overflow-hidden">
       {/* Faded clinic background image */}
@@ -169,42 +172,85 @@ export default function App() {
             }}
             transition={{ duration: 0.7, delay: 0.1, ease: 'easeOut' }}
           />
+          {/* Desktop nav */}
           <motion.nav
             className="space-x-8 text-gray-700 font-medium hidden md:block"
             variants={navStagger}
             initial="hidden"
             animate="visible"
+            aria-label="Main navigation"
           >
-            <motion.a href="#services" className="hover:text-blue-600 transition" variants={navItem}>Services</motion.a>
-            <motion.a href="#about" className="hover:text-blue-600 transition" variants={navItem}>About</motion.a>
-            <motion.a href="#testimonials" className="hover:text-blue-600 transition" variants={navItem}>Testimonials</motion.a>
-            <motion.a href="#contact" className="hover:text-blue-600 transition" variants={navItem}>Contact</motion.a>
-            <motion.a href="#address" className="hover:text-blue-600 transition" variants={navItem}>Address</motion.a>
+            <motion.a href="#services" className="hover:text-blue-600 transition focus:outline-none focus:ring-2 focus:ring-blue-400" variants={navItem} tabIndex={0}>Services</motion.a>
+            <motion.a href="#about" className="hover:text-blue-600 transition focus:outline-none focus:ring-2 focus:ring-blue-400" variants={navItem} tabIndex={0}>About</motion.a>
+            <motion.a href="#testimonials" className="hover:text-blue-600 transition focus:outline-none focus:ring-2 focus:ring-blue-400" variants={navItem} tabIndex={0}>Testimonials</motion.a>
+            <motion.a href="#contact" className="hover:text-blue-600 transition focus:outline-none focus:ring-2 focus:ring-blue-400" variants={navItem} tabIndex={0}>Contact</motion.a>
+            <motion.a href="#address" className="hover:text-blue-600 transition focus:outline-none focus:ring-2 focus:ring-blue-400" variants={navItem} tabIndex={0}>Address</motion.a>
           </motion.nav>
+          {/* Mobile hamburger */}
+          <button
+            className="md:hidden ml-4 p-2 rounded focus:outline-none focus:ring-2 focus:ring-blue-400"
+            aria-label={menuOpen ? 'Close menu' : 'Open menu'}
+            onClick={() => setMenuOpen(v => !v)}
+          >
+            <span className="sr-only">Menu</span>
+            <svg className="w-7 h-7 text-blue-700" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+              {menuOpen ? (
+                <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+              ) : (
+                <path strokeLinecap="round" strokeLinejoin="round" d="M4 8h16M4 16h16" />
+              )}
+            </svg>
+          </button>
+          {/* Desktop buttons */}
           <motion.div
-            className="space-x-4 flex items-center"
+            className="space-x-4 flex items-center hidden md:flex"
             variants={navStagger}
             initial="hidden"
             animate="visible"
           >
             <motion.button
-              className="px-4 py-2 rounded-full font-semibold text-gray-700 hover:bg-gray-100 transition"
+              className="px-4 py-2 rounded-full font-semibold text-gray-700 hover:bg-gray-100 transition focus:outline-none focus:ring-2 focus:ring-blue-400"
               variants={navItem}
               whileHover={{ scale: 1.06 }}
               whileTap={{ scale: 0.97 }}
+              aria-label="Login"
             >
               Login
             </motion.button>
             <motion.button
-              className="px-4 py-2 rounded-full font-semibold bg-blue-600 text-white shadow hover:bg-blue-700 transition"
+              className="px-4 py-2 rounded-full font-semibold bg-blue-600 text-white shadow hover:bg-blue-700 transition focus:outline-none focus:ring-2 focus:ring-blue-400"
               variants={navItem}
               whileHover={{ scale: 1.06 }}
               whileTap={{ scale: 0.97 }}
+              aria-label="Book Appointment"
             >
               Book Appointment
             </motion.button>
           </motion.div>
         </motion.div>
+        {/* Mobile menu overlay */}
+        <AnimatePresence>
+          {menuOpen && (
+            <motion.nav
+              key="mobile-menu"
+              initial={{ opacity: 0, y: -20 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -20 }}
+              transition={{ duration: 0.3 }}
+              className="md:hidden absolute top-full left-0 w-full bg-white shadow-lg border-t border-gray-100 z-50"
+              aria-label="Mobile navigation"
+            >
+              <ul className="flex flex-col py-4 px-8 space-y-2">
+                <li><a href="#services" className="block py-2 text-blue-900 font-semibold hover:text-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-400" tabIndex={0} onClick={() => setMenuOpen(false)}>Services</a></li>
+                <li><a href="#about" className="block py-2 text-blue-900 font-semibold hover:text-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-400" tabIndex={0} onClick={() => setMenuOpen(false)}>About</a></li>
+                <li><a href="#testimonials" className="block py-2 text-blue-900 font-semibold hover:text-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-400" tabIndex={0} onClick={() => setMenuOpen(false)}>Testimonials</a></li>
+                <li><a href="#contact" className="block py-2 text-blue-900 font-semibold hover:text-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-400" tabIndex={0} onClick={() => setMenuOpen(false)}>Contact</a></li>
+                <li><a href="#address" className="block py-2 text-blue-900 font-semibold hover:text-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-400" tabIndex={0} onClick={() => setMenuOpen(false)}>Address</a></li>
+                <li><button className="w-full mt-4 px-4 py-2 rounded-full bg-blue-600 text-white font-semibold shadow hover:bg-blue-700 transition focus:outline-none focus:ring-2 focus:ring-blue-400" aria-label="Book Appointment" onClick={() => setMenuOpen(false)}>Book Appointment</button></li>
+              </ul>
+            </motion.nav>
+          )}
+        </AnimatePresence>
       </motion.header>
 
       <div className="pt-20 md:pt-24"> {/* Push content below fixed header */}
@@ -216,14 +262,40 @@ export default function App() {
           viewport={{ once: false, amount: 0.2 }}
           variants={sectionVariant}
         >
-          {/* Animated SVG Blobs */}
-          <FloatingBlob className="absolute left-[-80px] top-[-80px] w-72 h-72 animate-float-slow" color="#3b82f6" opacity={0.18} />
-          <FloatingBlob className="absolute right-[-120px] bottom-[-100px] w-96 h-96 animate-float-fast" color="#60a5fa" opacity={0.12} />
-          <img src="https://images.unsplash.com/photo-1506744038136-46273834b3fb?auto=format&fit=crop&w=1200&q=80" alt="Eye Care Hero" className="absolute inset-0 w-full h-full object-cover opacity-20 pointer-events-none" />
+          {/* Animated SVG blob for hero background */}
+          <motion.svg
+            className="absolute left-[-80px] top-[-80px] w-72 h-72"
+            viewBox="0 0 200 200"
+            fill="none"
+            initial={{ opacity: 0, scale: 0.8 }}
+            animate={{ opacity: 0.18, scale: 1 }}
+            transition={{ duration: 1.2, delay: 0.2, type: 'spring' }}
+            aria-hidden="true"
+          >
+            <path fill="#3b82f6" fillOpacity="1" d="M44.8,-67.2C56.6,-59.2,63.7,-44.2,68.2,-29.2C72.7,-14.2,74.6,0.8,70.2,14.2C65.8,27.6,55.1,39.3,42.2,48.2C29.3,57.1,14.7,63.2,-0.7,64.1C-16.1,65,-32.2,60.7,-44.2,51.2C-56.2,41.7,-64.1,27,-67.2,11.2C-70.3,-4.6,-68.6,-21.5,-60.7,-33.7C-52.8,-45.9,-38.7,-53.4,-24.1,-60.2C-9.5,-67,5.6,-73.1,20.7,-73.2C35.8,-73.3,59.2,-67.2,44.8,-67.2Z" transform="translate(100 100)" />
+          </motion.svg>
+          {/* Parallax effect for hero image */}
+          <motion.img
+            src="https://images.unsplash.com/photo-1506744038136-46273834b3fb?auto=format&fit=crop&w=1200&q=80"
+            alt="Eye Care Hero"
+            className="absolute inset-0 w-full h-full object-cover opacity-20 pointer-events-none"
+            initial={{ scale: 1.05, y: 0 }}
+            animate={{ scale: 1, y: [0, 10, 0] }}
+            transition={{ duration: 8, repeat: Infinity, repeatType: 'reverse', ease: 'easeInOut' }}
+            aria-hidden="true"
+          />
           <div className="relative z-10 max-w-2xl mx-auto animate-fade-in">
             <h1 className="text-4xl md:text-6xl font-bold mb-6 text-blue-900 leading-tight">See the World Clearly with Trikaay Eye Clinic</h1>
             <p className="text-lg md:text-2xl text-gray-700 mb-8">Advanced laser treatments, compassionate care, and a brighter vision for your future.</p>
-            <button className="px-8 py-4 rounded-full font-semibold bg-blue-600 text-white text-lg shadow-lg hover:bg-blue-700 transition">Book Your Consultation</button>
+            <motion.button
+              className="px-8 py-4 rounded-full font-semibold bg-blue-600 text-white text-lg shadow-lg hover:bg-blue-700 transition focus:outline-none focus:ring-2 focus:ring-blue-400"
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.97 }}
+              transition={{ type: 'spring', stiffness: 300 }}
+              aria-label="Book Your Consultation"
+            >
+              Book Your Consultation
+            </motion.button>
           </div>
         </motion.section>
         {/* Animated SVG Divider */}
@@ -798,7 +870,7 @@ export default function App() {
             <motion.div className="flex flex-col items-center">
               <div className="bg-blue-100 p-4 rounded-full mb-2">
                 {/* Social icon */}
-                <svg xmlns="http://www.w3.org/2000/svg" className="h-8 w-8 text-blue-600" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M23 3a10.9 10.9 0 01-3.14 1.53A4.48 4.48 0 0022.4 1.64a9.09 9.09 0 01-2.88 1.1A4.52 4.52 0 0016.11.64c-2.5 0-4.52 2.02-4.52 4.52 0 .35.04.7.11 1.03C7.69 6.09 4.07 4.13 1.64 1.16c-.38.65-.6 1.4-.6 2.2 0 1.52.77 2.86 1.94 3.65A4.48 4.48 0 01.96 6.1v.06c0 2.13 1.52 3.91 3.54 4.31-.37.1-.76.16-1.16.16-.28 0-.55-.03-.82-.08.56 1.74 2.17 3.01 4.09 3.05A9.05 9.05 0 010 19.54a12.8 12.8 0 0 0 6.92 2.03c8.3 0 12.85-6.88 12.85-12.85 0-.2 0-.39-.01-.58A9.22 9.22 0 0 0 23 3z" /></svg>
+                <svg xmlns="http://www.w3.org/2000/svg" className="h-8 w-8 text-blue-600" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M23 3a10.9 10.9 0 01-3.14 1.53A4.48 4.48 0 0 0 22.4 1.64a9.09 9.09 0 01-2.88 1.1A4.52 4.52 0 0 0 16.11.64c-2.5 0-4.52 2.02-4.52 4.52 0 .35.04.7.11 1.03C7.69 6.09 4.07 4.13 1.64 1.16c-.38.65-.6 1.4-.6 2.2 0 1.52.77 2.86 1.94 3.65A4.48 4.48 0 0 1 .96 6.1v.06c0 2.13 1.52 3.91 3.54 4.31-.37.1-.76.16-1.16.16-.28 0-.55-.03-.82-.08.56 1.74 2.17 3.01 4.09 3.05A9.05 9.05 0 0 1 0 19.54a12.8 12.8 0 0 0 6.92 2.03c8.3 0 12.85-6.88 12.85-12.85 0-.2 0-.39-.01-.58A9.22 9.22 0 0 0 23 3z" /></svg>
               </div>
               <span className="font-semibold">10k+ Happy Patients</span>
               <span className="text-gray-500 text-sm">Join our community</span>
