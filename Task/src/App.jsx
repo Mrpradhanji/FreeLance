@@ -2,8 +2,10 @@ import './index.css';
 import logo from './assets/Trikaay_logo.png';
 import NewsletterSignup from './components/NewsletterSignup';
 import { motion, AnimatePresence } from 'framer-motion';
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, Suspense } from 'react';
 import StatsCounters from './components/StatsCounters';
+import MapSection from './components/MapSection';
+const HeroSection = React.lazy(() => import('./components/HeroSection'));
 
 // Floating SVG Blob component
 function FloatingBlob({ className = '', style = {}, color = '#3b82f6', opacity = 0.15 }) {
@@ -228,6 +230,16 @@ export default function App() {
     return () => clearTimeout(timer);
   }, [testimonialIdx]);
 
+  // Parallax state for hero image
+  const [parallaxY, setParallaxY] = useState(0);
+  useEffect(() => {
+    const onScroll = () => {
+      setParallaxY(window.scrollY * 0.2);
+    };
+    window.addEventListener('scroll', onScroll);
+    return () => window.removeEventListener('scroll', onScroll);
+  }, []);
+
   return (
     <div className="relative bg-white min-h-screen flex flex-col font-sans overflow-hidden">
       {/* --- Sticky Book Appointment Button (Mobile Only) --- */}
@@ -372,50 +384,14 @@ export default function App() {
       </motion.header>
 
       <div className="pt-20 md:pt-24"> {/* Push content below fixed header */}
-        {/* HERO SECTION */}
-        <motion.section
-          className="relative flex flex-col items-center justify-center text-center py-24 px-4 overflow-hidden bg-white"
-          initial="hidden"
-          whileInView="visible"
-          viewport={{ once: false, amount: 0.2 }}
-          variants={sectionVariant}
-        >
-          {/* Animated SVG blob for hero background */}
-          <motion.svg
-            className="absolute left-[-80px] top-[-80px] w-72 h-72"
-            viewBox="0 0 200 200"
-            fill="none"
-            initial={{ opacity: 0, scale: 0.8 }}
-            animate={{ opacity: 0.18, scale: 1 }}
-            transition={{ duration: 1.2, delay: 0.2, type: 'spring' }}
-            aria-hidden="true"
-          >
-            <path fill="#3b82f6" fillOpacity="1" d="M44.8,-67.2C56.6,-59.2,63.7,-44.2,68.2,-29.2C72.7,-14.2,74.6,0.8,70.2,14.2C65.8,27.6,55.1,39.3,42.2,48.2C29.3,57.1,14.7,63.2,-0.7,64.1C-16.1,65,-32.2,60.7,-44.2,51.2C-56.2,41.7,-64.1,27,-67.2,11.2C-70.3,-4.6,-68.6,-21.5,-60.7,-33.7C-52.8,-45.9,-38.7,-53.4,-24.1,-60.2C-9.5,-67,5.6,-73.1,20.7,-73.2C35.8,-73.3,59.2,-67.2,44.8,-67.2Z" transform="translate(100 100)" />
-          </motion.svg>
-          {/* Parallax effect for hero image */}
-          <motion.img
-            src="https://images.unsplash.com/photo-1506744038136-46273834b3fb?auto=format&fit=crop&w=1200&q=80"
-            alt="Eye Care Hero"
-            className="absolute inset-0 w-full h-full object-cover opacity-20 pointer-events-none"
-            initial={{ scale: 1.05, y: 0 }}
-            animate={{ scale: 1, y: [0, 10, 0] }}
-            transition={{ duration: 8, repeat: Infinity, repeatType: 'reverse', ease: 'easeInOut' }}
-            aria-hidden="true"
+        <Suspense fallback={<div className="min-h-[400px] flex items-center justify-center">Loading...</div>}>
+          <HeroSection
+            parallaxY={parallaxY}
+            scrolled={scrolled}
+            sectionVariant={sectionVariant}
           />
-          <div className="relative z-10 max-w-2xl mx-auto animate-fade-in">
-            <h1 className="text-4xl md:text-6xl font-bold mb-6 text-blue-900 leading-tight">See the World Clearly with Trikaay Eye Clinic</h1>
-            <p className="text-lg md:text-2xl text-gray-700 mb-8">Advanced laser treatments, compassionate care, and a brighter vision for your future.</p>
-            <motion.button
-              className="px-8 py-4 rounded-full font-semibold bg-blue-600 text-white text-lg shadow-lg hover:bg-blue-700 transition focus:outline-none focus:ring-2 focus:ring-blue-400"
-              whileHover={{ scale: 1.05 }}
-              whileTap={{ scale: 0.97 }}
-              transition={{ type: 'spring', stiffness: 300 }}
-              aria-label="Book Your Consultation"
-            >
-              Book Your Consultation
-            </motion.button>
-          </div>
-        </motion.section>
+        </Suspense>
+
         {/* Animated SVG Divider */}
         <div className="w-full overflow-hidden" aria-hidden="true">
           <svg viewBox="0 0 1440 60" fill="none" xmlns="http://www.w3.org/2000/svg" className="w-full h-8 md:h-12">
@@ -442,7 +418,7 @@ export default function App() {
           >
             {/* Laser Eye Surgery */}
             <motion.div
-              className="flex flex-col items-center text-center p-8 bg-white rounded-2xl shadow-md hover:shadow-lg transition cursor-pointer"
+              className="flex flex-col items-center text-center p-8 bg-white/60 backdrop-blur-lg rounded-2xl shadow-lg hover:shadow-xl transition cursor-pointer"
               variants={cardVariant}
               whileHover={{ scale: 1.04, boxShadow: '0 8px 32px rgba(59,130,246,0.15)' }}
               whileTap={{ scale: 0.97 }}
@@ -454,7 +430,7 @@ export default function App() {
             </motion.div>
             {/* Comprehensive Eye Exams */}
             <motion.div
-              className="flex flex-col items-center text-center p-8 bg-white rounded-2xl shadow-md hover:shadow-lg transition cursor-pointer"
+              className="flex flex-col items-center text-center p-8 bg-white/60 backdrop-blur-lg rounded-2xl shadow-lg hover:shadow-xl transition cursor-pointer"
               variants={cardVariant}
               whileHover={{ scale: 1.04, boxShadow: '0 8px 32px rgba(59,130,246,0.15)' }}
               whileTap={{ scale: 0.97 }}
@@ -466,7 +442,7 @@ export default function App() {
             </motion.div>
             {/* Pediatric Eye Care */}
             <motion.div
-              className="flex flex-col items-center text-center p-8 bg-white rounded-2xl shadow-md hover:shadow-lg transition cursor-pointer"
+              className="flex flex-col items-center text-center p-8 bg-white/60 backdrop-blur-lg rounded-2xl shadow-lg hover:shadow-xl transition cursor-pointer"
               variants={cardVariant}
               whileHover={{ scale: 1.04, boxShadow: '0 8px 32px rgba(59,130,246,0.15)' }}
               whileTap={{ scale: 0.97 }}
@@ -541,7 +517,7 @@ export default function App() {
             {doctors.map((doc, i) => (
               <motion.div
                 key={i}
-                className="flex flex-col items-center bg-white rounded-2xl shadow-md p-8 hover:shadow-xl transition group cursor-pointer"
+                className="flex flex-col items-center bg-white/60 backdrop-blur-lg rounded-2xl shadow-lg p-8 hover:shadow-xl transition group cursor-pointer"
                 variants={cardVariant}
                 whileHover={{ scale: 1.04, boxShadow: '0 8px 32px rgba(59,130,246,0.15)' }}
                 whileTap={{ scale: 0.97 }}
@@ -603,7 +579,7 @@ export default function App() {
             {surgeryPhotos.map((url, i) => (
               <motion.div
                 key={i}
-                className="overflow-hidden rounded-2xl shadow group cursor-pointer"
+                className="overflow-hidden rounded-2xl bg-white/60 backdrop-blur-lg shadow-lg group cursor-pointer"
                 variants={cardVariant}
                 whileHover={{ scale: 1.04, boxShadow: '0 8px 32px rgba(59,130,246,0.15)' }}
                 whileTap={{ scale: 0.97 }}
@@ -788,19 +764,19 @@ export default function App() {
             whileInView="visible"
             viewport={{ once: false, amount: 0.2 }}
           >
-            <motion.div className="bg-white rounded-2xl shadow p-8 flex flex-col items-center animate-slide-up" variants={cardVariant}>
+            <motion.div className="bg-white/60 backdrop-blur-lg rounded-2xl shadow-lg p-8 flex flex-col items-center animate-slide-up" variants={cardVariant}>
               <h3 className="text-xl font-semibold mb-2">Consultation</h3>
               <div className="text-4xl font-bold mb-4">₹500</div>
               <p className="mb-4 text-gray-600">Comprehensive eye exam and personalized advice.</p>
               <button className="px-6 py-3 rounded-full bg-blue-600 text-white font-semibold shadow hover:bg-blue-700 transition">Book Now</button>
             </motion.div>
-            <motion.div className="bg-blue-600 text-white rounded-2xl shadow p-8 flex flex-col items-center animate-slide-up" variants={cardVariant}>
+            <motion.div className="bg-blue-600/90 backdrop-blur-lg text-white rounded-2xl shadow-lg p-8 flex flex-col items-center animate-slide-up" variants={cardVariant}>
               <h3 className="text-xl font-semibold mb-2">Laser Surgery</h3>
               <div className="text-4xl font-bold mb-4">₹25,000</div>
               <p className="mb-4">Advanced LASIK/SMILE procedure with aftercare.</p>
               <button className="px-6 py-3 rounded-full bg-white text-blue-600 font-semibold shadow hover:bg-blue-100 transition">Book Now</button>
             </motion.div>
-            <motion.div className="bg-white rounded-2xl shadow p-8 flex flex-col items-center animate-slide-up" variants={cardVariant}>
+            <motion.div className="bg-white/60 backdrop-blur-lg rounded-2xl shadow-lg p-8 flex flex-col items-center animate-slide-up" variants={cardVariant}>
               <h3 className="text-xl font-semibold mb-2">Family Package</h3>
               <div className="text-4xl font-bold mb-4">₹40,000</div>
               <p className="mb-4 text-gray-600">Special rates for families and group bookings.</p>
@@ -1057,6 +1033,7 @@ export default function App() {
               Clear
             </button>
           </motion.form>
+          <MapSection />
         </motion.section>
         {/* Animated SVG Divider */}
         <div className="w-full overflow-hidden" aria-hidden="true">
@@ -1075,16 +1052,7 @@ export default function App() {
         >
           <h2 className="text-3xl font-bold text-center mb-10 text-blue-900">Our Community & Partners</h2>
           <motion.div className="flex flex-col md:flex-row gap-8 justify-center items-center max-w-4xl mx-auto">
-            {/* Google Rating Badge */}
-            <motion.div className="flex flex-col items-center">
-              <div className="flex items-center gap-2 bg-yellow-50 border border-yellow-200 px-4 py-2 rounded-full mb-2 shadow">
-                <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 text-yellow-400" fill="currentColor" viewBox="0 0 20 20"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.286 3.967a1 1 0 00.95.69h4.175c.969 0 1.371 1.24.588 1.81l-3.38 2.455a1 1 0 00-.364 1.118l1.287 3.966c.3.922-.755 1.688-1.54 1.118l-3.38-2.454a1 1 0 00-1.175 0l-3.38 2.454c-.784.57-1.838-.196-1.54-1.118l1.287-3.966a1 1 0 00-.364-1.118L2.049 9.394c-.783-.57-.38-1.81.588-1.81h4.175a1 1 0 00.95-.69l1.286-3.967z"/></svg>
-                <span className="font-bold text-yellow-700 text-lg">4.9</span>
-                <span className="text-gray-600 text-sm">on Google</span>
-              </div>
-              <span className="font-semibold">Rated by 2,000+ patients</span>
-              <span className="text-gray-500 text-sm">Google Reviews</span>
-            </motion.div>
+            {/* Award */}
             <motion.div className="flex flex-col items-center">
               <div className="bg-blue-100 p-4 rounded-full mb-2">
                 {/* Award icon */}
@@ -1093,6 +1061,7 @@ export default function App() {
               <span className="font-semibold">Best Eye Clinic 2024</span>
               <span className="text-gray-500 text-sm">Health Awards</span>
             </motion.div>
+            {/* Partner hospital */}
             <motion.div className="flex flex-col items-center">
               <div className="bg-blue-100 p-4 rounded-full mb-2">
                 {/* Partner hospital icon */}
@@ -1101,6 +1070,7 @@ export default function App() {
               <span className="font-semibold">Partnered with City Hospital</span>
               <span className="text-gray-500 text-sm">Since 2018</span>
             </motion.div>
+            {/* Social */}
             <motion.div className="flex flex-col items-center">
               <div className="bg-blue-100 p-4 rounded-full mb-2">
                 {/* Social icon */}
@@ -1180,6 +1150,28 @@ export default function App() {
                   <svg className="w-6 h-6" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><rect x="2" y="9" width="4" height="12"/><circle cx="4" cy="4" r="2"/><rect x="8" y="9" width="8" height="12"/><path d="M16 9v-2a4 4 0 0 1 8 0v2"/></svg>
                 </a>
               </div>
+            </div>
+            {/* Google Rating Badge (moved to footer right) */}
+            <div className="min-w-[180px] flex flex-col items-center md:items-end">
+              <div className="flex items-center gap-2 bg-yellow-50 border border-yellow-200 px-4 py-2 rounded-full mb-2 shadow">
+                <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 text-yellow-400" fill="currentColor" viewBox="0 0 20 20"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.286 3.967a1 1 0 00.95.69h4.175c.969 0 1.371 1.24.588 1.81l-3.38 2.455a1 1 0 00-.364 1.118l1.287 3.966c.3.922-.755 1.688-1.54 1.118l-3.38-2.454a1 1 0 00-1.175 0l-3.38 2.454c-.784.57-1.838-.196-1.54-1.118l1.287-3.966a1 1 0 00-.364-1.118L2.049 9.394c-.783-.57-.38-1.81.588-1.81h4.175a1 1 0 00.95-.69l1.286-3.967z"/></svg>
+                <span className="font-bold text-yellow-700 text-lg">4.9</span>
+                <span className="text-gray-600 text-sm">on Google</span>
+              </div>
+              <span className="font-semibold">Rated by 2,000+ patients</span>
+              <span className="text-gray-500 text-sm mb-2">Google Reviews</span>
+              {/* Find us on Google Maps badge/button */}
+              <a
+                href="https://www.google.com/maps?q=123+Vision+Avenue+Sector+21+New+Delhi+India+Pin+110021"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="flex items-center gap-2 px-4 py-2 rounded-full bg-blue-50 border border-blue-200 text-blue-700 font-semibold shadow hover:bg-blue-100 transition mt-2"
+                style={{ minWidth: '170px', justifyContent: 'center' }}
+                aria-label="Find us on Google Maps"
+              >
+                <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-blue-600" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/></svg>
+                Find us on Google Maps
+              </a>
             </div>
           </motion.div>
         </motion.footer>
