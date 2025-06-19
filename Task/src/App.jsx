@@ -1,7 +1,9 @@
 import './index.css';
 import logo from './assets/Trikaay_logo.png';
+import NewsletterSignup from './components/NewsletterSignup';
 import { motion, AnimatePresence } from 'framer-motion';
 import React, { useState, useEffect } from 'react';
+import VideoTestimonial from './components/VideoTestimonial';
 
 // Floating SVG Blob component
 function FloatingBlob({ className = '', style = {}, color = '#3b82f6', opacity = 0.15 }) {
@@ -113,18 +115,120 @@ export default function App() {
       q: 'Do you offer pediatric eye care?',
       a: 'Yes, we provide specialized eye care for children, including exams and early intervention for vision issues.',
     },
+    {
+      q: 'What payment methods do you accept?',
+      a: 'We accept cash, credit/debit cards, UPI, and most major insurance plans.',
+    },
+    {
+      q: 'Do you provide aftercare?',
+      a: 'Yes, comprehensive aftercare is included with all surgical procedures to ensure the best recovery.',
+    },
+    {
+      q: 'Can I book an appointment online?',
+      a: 'Absolutely! Use our online form or call us to schedule your visit at your convenience.',
+    },
   ];
   const [openFaq, setOpenFaq] = useState(null);
 
-  // For floating labels in the form
-  const [form, setForm] = useState({ name: '', email: '', phone: '', service: '', message: '' });
+  // Persist form data in localStorage
+  const initialForm = () => {
+    try {
+      const saved = localStorage.getItem('trikaayForm');
+      return saved ? JSON.parse(saved) : { name: '', email: '', phone: '', service: '', message: '' };
+    } catch {
+      return { name: '', email: '', phone: '', service: '', message: '' };
+    }
+  };
+  const [form, setForm] = useState(initialForm);
+  useEffect(() => {
+    localStorage.setItem('trikaayForm', JSON.stringify(form));
+  }, [form]);
   const handleFormChange = e => setForm({ ...form, [e.target.name]: e.target.value });
+
+  // Validation state
+  const [touched, setTouched] = useState({});
+  const [errors, setErrors] = useState({});
+  const validate = (f = form) => {
+    const errs = {};
+    if (!f.name.trim()) errs.name = 'Please enter your name.';
+    if (!f.email.trim() || !/^\S+@\S+\.\S+$/.test(f.email)) errs.email = 'Enter a valid email address.';
+    if (!f.phone.trim() || !/^\d{10}$/.test(f.phone.replace(/\D/g, ''))) errs.phone = 'Enter a valid 10-digit phone number.';
+    if (!f.service) errs.service = 'Please select a service.';
+    if (!f.message.trim() || f.message.length < 10) errs.message = 'Message should be at least 10 characters.';
+    return errs;
+  };
+  useEffect(() => {
+    setErrors(validate());
+  }, [form]);
+  const handleBlur = e => setTouched({ ...touched, [e.target.name]: true });
+
+  // Clear form handler
+  const handleClearForm = () => {
+    setForm({ name: '', email: '', phone: '', service: '', message: '' });
+    setTouched({});
+    setErrors({});
+    localStorage.removeItem('trikaayForm');
+  };
 
   // Mobile menu state
   const [menuOpen, setMenuOpen] = useState(false);
 
+  // --- Smooth Scroll CSS (add to global styles, but for demo, inject here) ---
+  useEffect(() => {
+    document.documentElement.style.scrollBehavior = 'smooth';
+    return () => { document.documentElement.style.scrollBehavior = ''; };
+  }, []);
+
+  // --- Doctor Modal State ---
+  const [modalDoctor, setModalDoctor] = useState(null);
+
+  // --- Testimonials Carousel State ---
+  const testimonials = [
+    {
+      img: 'https://images.unsplash.com/photo-1517841905240-472988babdf9?auto=format&fit=crop&w=100&q=80',
+      text: '"The doctors at Trikaay Eye Clinic changed my life. I can see clearly without glasses for the first time in 20 years!"',
+      name: 'Amit S.'
+    },
+    {
+      img: 'https://images.unsplash.com/photo-1508214751196-bcfd4ca60f91?auto=format&fit=crop&w=100&q=80',
+      text: '"The staff made me feel comfortable and cared for. The results are amazing!"',
+      name: 'Priya M.'
+    },
+    {
+      img: 'https://images.unsplash.com/photo-1529626455594-4ff0802cfb7e?auto=format&fit=crop&w=100&q=80',
+      text: '"Highly recommend Trikaay for anyone considering laser eye surgery!"',
+      name: 'Rahul D.'
+    },
+    // Extra testimonials for carousel
+    {
+      img: 'https://randomuser.me/api/portraits/men/32.jpg',
+      text: '"Professional, friendly, and highly skilled team. My vision is perfect now!"',
+      name: 'Suresh K.'
+    },
+    {
+      img: 'https://randomuser.me/api/portraits/women/44.jpg',
+      text: '"State-of-the-art facilities and caring staff. 10/10 experience!"',
+      name: 'Meena R.'
+    }
+  ];
+  const [testimonialIdx, setTestimonialIdx] = useState(0);
+  const nextTestimonial = () => setTestimonialIdx((testimonialIdx + 1) % testimonials.length);
+  const prevTestimonial = () => setTestimonialIdx((testimonialIdx - 1 + testimonials.length) % testimonials.length);
+
   return (
     <div className="relative bg-white min-h-screen flex flex-col font-sans overflow-hidden">
+      {/* --- Sticky Book Appointment Button (Mobile Only) --- */}
+      <button
+        className="fixed bottom-4 left-1/2 -translate-x-1/2 z-50 px-6 py-3 rounded-full bg-blue-600 text-white font-bold shadow-lg md:hidden block hover:bg-blue-700 transition"
+        style={{ minWidth: 220 }}
+        onClick={() => {
+          const el = document.getElementById('contact');
+          if (el) el.scrollIntoView({ behavior: 'smooth' });
+        }}
+        aria-label="Book Appointment"
+      >
+        Book Appointment
+      </button>
       {/* Faded clinic background image */}
       <img
         src="https://images.unsplash.com/photo-1505751172876-fa1923c5c528?auto=format&fit=crop&w=1200&q=80"
@@ -159,19 +263,22 @@ export default function App() {
           className="relative flex justify-between items-center px-8 py-4 max-w-7xl mx-auto w-full transition-all duration-300"
           style={{ zIndex: 2 }}
         >
-          <motion.img
-            src={logo}
-            alt="Trikaay Eye Clinic Logo"
-            className="h-10 w-auto"
-            initial={{ opacity: 0, x: -30 }}
-            animate={{
-              opacity: 1,
-              x: 0,
-              scale: scrolled ? 0.85 : 1,
-              filter: scrolled ? 'brightness(0.92)' : 'brightness(1)',
-            }}
-            transition={{ duration: 0.7, delay: 0.1, ease: 'easeOut' }}
-          />
+          <div className="flex flex-col items-center">
+            <motion.img
+              src={logo}
+              alt="Trikaay Eye Clinic Logo"
+              className="h-10 w-auto"
+              initial={{ opacity: 0, x: -30 }}
+              animate={{
+                opacity: 1,
+                x: 0,
+                scale: scrolled ? 0.85 : 1,
+                filter: scrolled ? 'brightness(0.92)' : 'brightness(1)',
+              }}
+              transition={{ duration: 0.7, delay: 0.1, ease: 'easeOut' }}
+            />
+            <div className="text-xs text-gray-500 font-medium tracking-wide mt-1 ml-1">Eye care</div>
+          </div>
           {/* Desktop nav */}
           <motion.nav
             className="space-x-8 text-gray-700 font-medium hidden md:block"
@@ -184,7 +291,6 @@ export default function App() {
             <motion.a href="#about" className="hover:text-blue-600 transition focus:outline-none focus:ring-2 focus:ring-blue-400" variants={navItem} tabIndex={0}>About</motion.a>
             <motion.a href="#testimonials" className="hover:text-blue-600 transition focus:outline-none focus:ring-2 focus:ring-blue-400" variants={navItem} tabIndex={0}>Testimonials</motion.a>
             <motion.a href="#contact" className="hover:text-blue-600 transition focus:outline-none focus:ring-2 focus:ring-blue-400" variants={navItem} tabIndex={0}>Contact</motion.a>
-            <motion.a href="#address" className="hover:text-blue-600 transition focus:outline-none focus:ring-2 focus:ring-blue-400" variants={navItem} tabIndex={0}>Address</motion.a>
           </motion.nav>
           {/* Mobile hamburger */}
           <button
@@ -245,7 +351,6 @@ export default function App() {
                 <li><a href="#about" className="block py-2 text-blue-900 font-semibold hover:text-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-400" tabIndex={0} onClick={() => setMenuOpen(false)}>About</a></li>
                 <li><a href="#testimonials" className="block py-2 text-blue-900 font-semibold hover:text-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-400" tabIndex={0} onClick={() => setMenuOpen(false)}>Testimonials</a></li>
                 <li><a href="#contact" className="block py-2 text-blue-900 font-semibold hover:text-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-400" tabIndex={0} onClick={() => setMenuOpen(false)}>Contact</a></li>
-                <li><a href="#address" className="block py-2 text-blue-900 font-semibold hover:text-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-400" tabIndex={0} onClick={() => setMenuOpen(false)}>Address</a></li>
                 <li><button className="w-full mt-4 px-4 py-2 rounded-full bg-blue-600 text-white font-semibold shadow hover:bg-blue-700 transition focus:outline-none focus:ring-2 focus:ring-blue-400" aria-label="Book Appointment" onClick={() => setMenuOpen(false)}>Book Appointment</button></li>
               </ul>
             </motion.nav>
@@ -423,6 +528,9 @@ export default function App() {
                 whileHover={{ scale: 1.04, boxShadow: '0 8px 32px rgba(59,130,246,0.15)' }}
                 whileTap={{ scale: 0.97 }}
                 transition={{ type: 'spring', stiffness: 300 }}
+                onClick={() => setModalDoctor(doc)}
+                tabIndex={0}
+                aria-label={`More about ${doc.name}`}
               >
                 <img src={doc.img} alt={doc.name} className="w-28 h-28 rounded-full object-cover mb-4 border-4 border-blue-100 group-hover:scale-105 group-hover:border-blue-400 transition-transform duration-300" />
                 <h3 className="text-xl font-semibold text-blue-800 mb-1">{doc.name}</h3>
@@ -431,6 +539,25 @@ export default function App() {
               </motion.div>
             ))}
           </motion.div>
+          {/* Doctor Modal Popup */}
+          {modalDoctor && (
+            <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm">
+              <div className="bg-white rounded-2xl shadow-2xl p-8 max-w-md w-full relative animate-fade-in">
+                <button
+                  className="absolute top-3 right-3 text-gray-400 hover:text-blue-600 text-2xl font-bold"
+                  onClick={() => setModalDoctor(null)}
+                  aria-label="Close doctor details"
+                >
+                  ×
+                </button>
+                <img src={modalDoctor.img} alt={modalDoctor.name} className="w-24 h-24 rounded-full object-cover mx-auto mb-4 border-4 border-blue-100" />
+                <h3 className="text-2xl font-bold text-blue-800 mb-1 text-center">{modalDoctor.name}</h3>
+                <div className="text-blue-500 font-medium mb-2 text-center">{modalDoctor.specialty}</div>
+                <p className="text-gray-700 text-center mb-4">{modalDoctor.bio}</p>
+                <div className="text-gray-600 text-sm text-center">Experience: 10+ years<br/>Languages: English, Hindi<br/>Education: AIIMS, Delhi</div>
+              </div>
+            </div>
+          )}
         </motion.section>
         {/* Animated SVG Divider */}
         <div className="w-full overflow-hidden" aria-hidden="true">
@@ -559,7 +686,7 @@ export default function App() {
           </svg>
         </div>
 
-        {/* TESTIMONIALS SECTION */}
+        {/* TESTIMONIALS SECTION (Carousel) */}
         <motion.section
           id="testimonials"
           className="bg-blue-50 py-20 px-4"
@@ -569,28 +696,31 @@ export default function App() {
           variants={sectionVariant}
         >
           <h2 className="text-3xl font-bold text-center mb-12 text-blue-900">What Our Patients Say</h2>
+          <div className="max-w-2xl mx-auto mb-8">
+            <h3 className="text-xl font-semibold text-blue-800 mb-4 text-center">Video Testimonial</h3>
+            <VideoTestimonial />
+          </div>
           <motion.div
-            className="flex flex-col md:flex-row gap-8 justify-center items-stretch max-w-5xl mx-auto"
+            className="flex flex-col items-center gap-8 max-w-2xl mx-auto relative"
             variants={staggerContainer}
             initial="hidden"
             whileInView="visible"
             viewport={{ once: false, amount: 0.2 }}
           >
-            <motion.div className="bg-white rounded-xl shadow p-6 flex flex-col items-center max-w-md mx-auto animate-slide-up" variants={cardVariant}>
-              <img src="https://images.unsplash.com/photo-1517841905240-472988babdf9?auto=format&fit=crop&w=100&q=80" alt="Patient 1" className="w-16 h-16 rounded-full mb-4 object-cover" />
-              <p className="italic text-gray-700 mb-4">"The doctors at Trikaay Eye Clinic changed my life. I can see clearly without glasses for the first time in 20 years!"</p>
-              <span className="font-semibold text-blue-700">Amit S.</span>
+            <motion.div className="bg-white rounded-xl shadow p-6 flex flex-col items-center w-full animate-slide-up" variants={cardVariant}>
+              <img src={testimonials[testimonialIdx].img} alt={`Patient ${testimonials[testimonialIdx].name}`} className="w-16 h-16 rounded-full mb-4 object-cover" />
+              <p className="italic text-gray-700 mb-4">{testimonials[testimonialIdx].text}</p>
+              <span className="font-semibold text-blue-700">{testimonials[testimonialIdx].name}</span>
             </motion.div>
-            <motion.div className="bg-white rounded-xl shadow p-6 flex flex-col items-center max-w-md mx-auto animate-slide-up" variants={cardVariant}>
-              <img src="https://images.unsplash.com/photo-1508214751196-bcfd4ca60f91?auto=format&fit=crop&w=100&q=80" alt="Patient 2" className="w-16 h-16 rounded-full mb-4 object-cover" />
-              <p className="italic text-gray-700 mb-4">"The staff made me feel comfortable and cared for. The results are amazing!"</p>
-              <span className="font-semibold text-blue-700">Priya M.</span>
-            </motion.div>
-            <motion.div className="bg-white rounded-xl shadow p-6 flex flex-col items-center max-w-md mx-auto animate-slide-up" variants={cardVariant}>
-              <img src="https://images.unsplash.com/photo-1529626455594-4ff0802cfb7e?auto=format&fit=crop&w=100&q=80" alt="Patient 3" className="w-16 h-16 rounded-full mb-4 object-cover" />
-              <p className="italic text-gray-700 mb-4">"Highly recommend Trikaay for anyone considering laser eye surgery!"</p>
-              <span className="font-semibold text-blue-700">Rahul D.</span>
-            </motion.div>
+            <div className="flex gap-4 mt-2">
+              <button onClick={prevTestimonial} aria-label="Previous testimonial" className="p-2 rounded-full bg-blue-100 hover:bg-blue-200 text-blue-600"><svg width="24" height="24" fill="none" stroke="currentColor" strokeWidth="2"><polyline points="15 18 9 12 15 6" /></svg></button>
+              <button onClick={nextTestimonial} aria-label="Next testimonial" className="p-2 rounded-full bg-blue-100 hover:bg-blue-200 text-blue-600"><svg width="24" height="24" fill="none" stroke="currentColor" strokeWidth="2"><polyline points="9 6 15 12 9 18" /></svg></button>
+            </div>
+            <div className="flex gap-1 mt-2">
+              {testimonials.map((_, idx) => (
+                <span key={idx} className={`w-2 h-2 rounded-full ${idx === testimonialIdx ? 'bg-blue-600' : 'bg-blue-200'}`}></span>
+              ))}
+            </div>
           </motion.div>
         </motion.section>
         {/* Animated SVG Divider */}
@@ -730,15 +860,23 @@ export default function App() {
                   name="name"
                   value={form.name}
                   onChange={handleFormChange}
-                  className="pl-10 pr-3 py-3 w-full rounded-lg bg-white border border-gray-200 shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-400 text-base transition peer"
+                  onBlur={handleBlur}
+                  className={`pl-10 pr-3 py-3 w-full rounded-lg bg-white border border-gray-200 shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-400 text-base transition ${form.name ? '' : 'text-gray-400'}`}
                   required
                   autoComplete="off"
                   placeholder=" "
                   aria-label="Full Name"
                 />
-                <label className="absolute left-10 top-1/2 -translate-y-1/2 text-gray-500 pointer-events-none transition-all duration-200 peer-focus:-top-3.5 peer-focus:text-xs peer-focus:text-blue-600 peer-placeholder-shown:top-1/2 peer-placeholder-shown:text-base peer-placeholder-shown:text-gray-400 bg-white px-1">
+                <label className={`absolute left-10 transition-all duration-200 bg-white px-1 pointer-events-none ${form.name ? '-top-3.5 text-xs text-blue-600' : 'top-2 text-base text-gray-400'}`}
+                >
                   Full Name
                 </label>
+                {touched.name && errors.name && (
+                  <div className="flex items-center gap-2 mt-1 text-red-600 animate-pulse">
+                    <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><circle cx="12" cy="16" r="1"/></svg>
+                    <span>{errors.name}</span>
+                  </div>
+                )}
               </div>
               {/* Email */}
               <div className="relative flex-1">
@@ -750,15 +888,23 @@ export default function App() {
                   name="email"
                   value={form.email}
                   onChange={handleFormChange}
-                  className="pl-10 pr-3 py-3 w-full rounded-lg bg-white border border-gray-200 shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-400 text-base transition peer"
+                  onBlur={handleBlur}
+                  className={`pl-10 pr-3 py-3 w-full rounded-lg bg-white border border-gray-200 shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-400 text-base transition ${form.email ? '' : 'text-gray-400'}`}
                   required
                   autoComplete="off"
                   placeholder=" "
                   aria-label="Email Address"
                 />
-                <label className="absolute left-10 top-1/2 -translate-y-1/2 text-gray-500 pointer-events-none transition-all duration-200 peer-focus:-top-3.5 peer-focus:text-xs peer-focus:text-blue-600 peer-placeholder-shown:top-1/2 peer-placeholder-shown:text-base peer-placeholder-shown:text-gray-400 bg-white px-1">
+                <label className={`absolute left-10 transition-all duration-200 bg-white px-1 pointer-events-none ${form.email ? '-top-3.5 text-xs text-blue-600' : 'top-2 text-base text-gray-400'}`}
+                >
                   Email Address
                 </label>
+                {touched.email && errors.email && (
+                  <div className="flex items-center gap-2 mt-1 text-red-600 animate-pulse">
+                    <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><circle cx="12" cy="16" r="1"/></svg>
+                    <span>{errors.email}</span>
+                  </div>
+                )}
               </div>
             </div>
             <div className="flex flex-col md:flex-row gap-6">
@@ -772,15 +918,23 @@ export default function App() {
                   name="phone"
                   value={form.phone}
                   onChange={handleFormChange}
-                  className="pl-10 pr-3 py-3 w-full rounded-lg bg-white border border-gray-200 shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-400 text-base transition peer"
+                  onBlur={handleBlur}
+                  className={`pl-10 pr-3 py-3 w-full rounded-lg bg-white border border-gray-200 shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-400 text-base transition ${form.phone ? '' : 'text-gray-400'}`}
                   required
                   autoComplete="off"
                   placeholder=" "
                   aria-label="Phone Number"
                 />
-                <label className="absolute left-10 top-1/2 -translate-y-1/2 text-gray-500 pointer-events-none transition-all duration-200 peer-focus:-top-3.5 peer-focus:text-xs peer-focus:text-blue-600 peer-placeholder-shown:top-1/2 peer-placeholder-shown:text-base peer-placeholder-shown:text-gray-400 bg-white px-1">
+                <label className={`absolute left-10 transition-all duration-200 bg-white px-1 pointer-events-none ${form.phone ? '-top-3.5 text-xs text-blue-600' : 'top-2 text-base text-gray-400'}`}
+                >
                   Phone Number
                 </label>
+                {touched.phone && errors.phone && (
+                  <div className="flex items-center gap-2 mt-1 text-red-600 animate-pulse">
+                    <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><circle cx="12" cy="16" r="1"/></svg>
+                    <span>{errors.phone}</span>
+                  </div>
+                )}
               </div>
               {/* Service */}
               <div className="relative flex-1">
@@ -791,18 +945,31 @@ export default function App() {
                   name="service"
                   value={form.service}
                   onChange={handleFormChange}
-                  className="pl-10 pr-3 py-3 w-full rounded-lg bg-white border border-gray-200 shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-400 text-base transition peer"
+                  onBlur={handleBlur}
+                  className={`pl-10 pr-3 py-3 w-full rounded-lg bg-white border border-gray-200 shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-400 text-base transition ${form.service ? '' : 'text-gray-400'}`}
                   required
-                  aria-label="Select Service"
+                  aria-label="Select Services"
                 >
-                  <option value="" disabled>Select Service</option>
+                  <option value="">None</option>
                   <option>Laser Eye Surgery</option>
                   <option>Eye Exam</option>
                   <option>Pediatric Eye Care</option>
+                  <option>Cataract & Glaucoma</option>
+                  <option>Retina & Vitreous</option>
+                  <option>Oculoplasty</option>
+                  <option>General Ophthalmology</option>
                 </select>
-                <label className="absolute left-10 top-1/2 -translate-y-1/2 text-gray-500 pointer-events-none transition-all duration-200 peer-focus:-top-3.5 peer-focus:text-xs peer-focus:text-blue-600 peer-placeholder-shown:top-1/2 peer-placeholder-shown:text-base peer-placeholder-shown:text-gray-400 bg-white px-1">
-                  Service
+                {/* Label floats above if no value, shrinks if value is selected */}
+                <label className={`absolute left-10 transition-all duration-200 bg-white px-1 pointer-events-none ${form.service ? '-top-3.5 text-xs text-blue-600' : 'top-2 text-base text-gray-400'}`}
+                >
+                  Services
                 </label>
+                {touched.service && errors.service && (
+                  <div className="flex items-center gap-2 mt-1 text-red-600 animate-pulse">
+                    <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><circle cx="12" cy="16" r="1"/></svg>
+                    <span>{errors.service}</span>
+                  </div>
+                )}
               </div>
             </div>
             {/* Message */}
@@ -814,14 +981,22 @@ export default function App() {
                 name="message"
                 value={form.message}
                 onChange={handleFormChange}
-                className="pl-10 pr-3 py-3 w-full rounded-lg bg-white border border-gray-200 shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-400 text-base transition peer"
+                onBlur={handleBlur}
+                className={`pl-10 pr-3 py-3 w-full rounded-lg bg-white border border-gray-200 shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-400 text-base transition ${form.message ? '' : 'text-gray-400'}`}
                 rows={4}
                 placeholder=" "
                 aria-label="Your Message"
               ></textarea>
-              <label className="absolute left-10 top-4 text-gray-500 pointer-events-none transition-all duration-200 peer-focus:-top-3.5 peer-focus:text-xs peer-focus:text-blue-600 peer-placeholder-shown:top-4 peer-placeholder-shown:text-base peer-placeholder-shown:text-gray-400 bg-white px-1">
+              <label className={`absolute left-10 transition-all duration-200 bg-white px-1 pointer-events-none ${form.message ? '-top-3.5 text-xs text-blue-600' : 'top-4 text-base text-gray-400'}`}
+              >
                 Your Message
               </label>
+              {touched.message && errors.message && (
+                <div className="flex items-center gap-2 mt-1 text-red-600 animate-bounce">
+                  <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><circle cx="12" cy="16" r="1"/></svg>
+                  <span>{errors.message}</span>
+                </div>
+              )}
             </div>
             <motion.button
               type="submit"
@@ -832,6 +1007,13 @@ export default function App() {
             >
               Submit
             </motion.button>
+            <button
+              type="button"
+              onClick={handleClearForm}
+              className="w-full mt-2 px-8 py-4 rounded-full border-2 border-blue-600 text-blue-600 font-bold text-lg shadow hover:bg-blue-50 transition"
+            >
+              Clear
+            </button>
           </motion.form>
         </motion.section>
         {/* Animated SVG Divider */}
@@ -841,7 +1023,7 @@ export default function App() {
           </svg>
         </div>
 
-        {/* COMMUNITY/SPOTLIGHT SECTION */}
+        {/* COMMUNITY/SPOTLIGHT SECTION (with Google Rating Badge) */}
         <motion.section
           className="bg-white py-20 px-4"
           initial="hidden"
@@ -851,6 +1033,16 @@ export default function App() {
         >
           <h2 className="text-3xl font-bold text-center mb-10 text-blue-900">Our Community & Partners</h2>
           <motion.div className="flex flex-col md:flex-row gap-8 justify-center items-center max-w-4xl mx-auto">
+            {/* Google Rating Badge */}
+            <motion.div className="flex flex-col items-center">
+              <div className="flex items-center gap-2 bg-yellow-50 border border-yellow-200 px-4 py-2 rounded-full mb-2 shadow">
+                <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 text-yellow-400" fill="currentColor" viewBox="0 0 20 20"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.286 3.967a1 1 0 00.95.69h4.175c.969 0 1.371 1.24.588 1.81l-3.38 2.455a1 1 0 00-.364 1.118l1.287 3.966c.3.922-.755 1.688-1.54 1.118l-3.38-2.454a1 1 0 00-1.175 0l-3.38 2.454c-.784.57-1.838-.196-1.54-1.118l1.287-3.966a1 1 0 00-.364-1.118L2.049 9.394c-.783-.57-.38-1.81.588-1.81h4.175a1 1 0 00.95-.69l1.286-3.967z"/></svg>
+                <span className="font-bold text-yellow-700 text-lg">4.9</span>
+                <span className="text-gray-600 text-sm">on Google</span>
+              </div>
+              <span className="font-semibold">Rated by 2,000+ patients</span>
+              <span className="text-gray-500 text-sm">Google Reviews</span>
+            </motion.div>
             <motion.div className="flex flex-col items-center">
               <div className="bg-blue-100 p-4 rounded-full mb-2">
                 {/* Award icon */}
@@ -870,7 +1062,7 @@ export default function App() {
             <motion.div className="flex flex-col items-center">
               <div className="bg-blue-100 p-4 rounded-full mb-2">
                 {/* Social icon */}
-                <svg xmlns="http://www.w3.org/2000/svg" className="h-8 w-8 text-blue-600" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M23 3a10.9 10.9 0 01-3.14 1.53A4.48 4.48 0 0 0 22.4 1.64a9.09 9.09 0 01-2.88 1.1A4.52 4.52 0 0 0 16.11.64c-2.5 0-4.52 2.02-4.52 4.52 0 .35.04.7.11 1.03C7.69 6.09 4.07 4.13 1.64 1.16c-.38.65-.6 1.4-.6 2.2 0 1.52.77 2.86 1.94 3.65A4.48 4.48 0 0 1 .96 6.1v.06c0 2.13 1.52 3.91 3.54 4.31-.37.1-.76.16-1.16.16-.28 0-.55-.03-.82-.08.56 1.74 2.17 3.01 4.09 3.05A9.05 9.05 0 0 1 0 19.54a12.8 12.8 0 0 0 6.92 2.03c8.3 0 12.85-6.88 12.85-12.85 0-.2 0-.39-.01-.58A9.22 9.22 0 0 0 23 3z" /></svg>
+                <svg xmlns="http://www.w3.org/2000/svg" className="h-8 w-8 text-blue-600" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M23 3a10.9 10.9 0 01-3.14 1.53A4.48 4.48 0 0 0 22.4 1.64a9.09 9.09 0 0 1-2.88 1.1A4.52 4.52 0 0 0 16.11.64c-2.5 0-4.52 2.02-4.52 4.52 0 .35.04.7.11 1.03C7.69 6.09 4.07 4.13 1.64 1.16c-.38.65-.6 1.4-.6 2.2 0 1.52.77 2.86 1.94 3.65A4.48 4.48 0 0 1 .96 6.1v.06c0 2.13 1.52 3.91 3.54 4.31-.37.1-.76.16-1.16.16-.28 0-.55-.03-.82-.08.56 1.74 2.17 3.01 4.09 3.05A9.05 9.05 0 0 1 0 19.54a12.8 12.8 0 0 0 6.92 2.03c8.3 0 12.85-6.88 12.85-12.85 0-.2 0-.39-.01-.58A9.22 9.22 0 0 0 23 3z" /></svg>
               </div>
               <span className="font-semibold">10k+ Happy Patients</span>
               <span className="text-gray-500 text-sm">Join our community</span>
@@ -892,16 +1084,31 @@ export default function App() {
           viewport={{ once: false, amount: 0.2 }}
           variants={sectionVariant}
         >
+          {/* Newsletter Signup */}
+          <div className="max-w-2xl mx-auto mb-8">
+            <h3 className="text-xl font-bold text-blue-900 mb-2 text-center">Stay Updated!</h3>
+            <p className="text-gray-600 text-center mb-4">Subscribe to our newsletter for the latest news, offers, and eye care tips.</p>
+            <NewsletterSignup />
+          </div>
           <motion.div className="max-w-7xl mx-auto flex flex-col md:flex-row justify-between items-start md:items-center text-gray-600 text-sm gap-8 md:gap-4">
             {/* Logo and copyright */}
             <div className="flex flex-col gap-2 md:gap-4 md:flex-row items-start md:items-center">
               <img src={logo} alt="Trikaay Eye Clinic Logo" className="h-8 w-auto mb-2 md:mb-0" />
+              <div className="text-xs text-gray-500 font-medium tracking-wide mt-1 ml-1">Eye care</div>
               <span>© 2025 Trikaay Eye Clinic. All rights reserved.</span>
             </div>
             {/* Address */}
             <div className="min-w-[180px]">
               <div className="font-semibold text-blue-900 mb-1">Address</div>
               <div>123 Vision Avenue<br />Sector 21, New Delhi, India<br />Pin 110021</div>
+            </div>
+            {/* Contact Info */}
+            <div className="min-w-[180px]">
+              <div className="font-semibold text-blue-900 mb-1">Contact</div>
+              <div>
+                <span className="block">Phone: <a href="tel:+911234567890" className="hover:text-blue-600 transition">+91 12345 67890</a></span>
+                <span className="block">Email: <a href="mailto:trikaayclinic@gmail.com" className="hover:text-blue-600 transition">trikaayclinic@gmail.com</a></span>
+              </div>
             </div>
             {/* Services */}
             <div className="min-w-[180px]">
@@ -922,7 +1129,7 @@ export default function App() {
                   <svg className="w-6 h-6" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><rect x="2" y="2" width="20" height="20" rx="5"/><path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"/><line x1="17.5" y1="6.5" x2="17.5" y2="6.5"/></svg>
                 </a>
                 <a href="https://twitter.com" target="_blank" rel="noopener noreferrer" aria-label="Twitter" className="hover:text-blue-400 transition">
-                  <svg className="w-6 h-6" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path d="M23 3a10.9 10.9 0 0 1-3.14 1.53A4.48 4.48 0 0 0 22.4 1.64a9.09 9.09 0 0 1-2.88 1.1A4.52 4.52 0 0 0 16.11.64c-2.5 0-4.52 2.02-4.52 4.52 0 .35.04.7.11 1.03C7.69 6.09 4.07 4.13 1.64 1.16c-.38.65-.6 1.4-.6 2.2 0 1.52.77 2.86 1.94 3.65A4.48 4.48 0 0 1 .96 6.1v.06c0 2.13 1.52 3.91 3.54 4.31-.37.1-.76.16-1.16.16-.28 0-.55-.03-.82-.08.56 1.74 2.17 3.01 4.09 3.05A9.05 9.05 0 0 1 0 19.54a12.8 12.8 0 0 0 6.92 2.03c8.3 0 12.85-6.88 12.85-12.85 0-.2 0-.39-.01-.58A9.22 9.22 0 0 0 23 3z"/></svg>
+                  <svg className="w-6 h-6" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path d="M23 3a10.9 10.9 0 0 1-3.14 1.53A4.48 4.48 0 0 0 22.4 1.64a9.09 9.09 0 0 1-2.88 1.1A4.52 4.52 0 0 0 16.11.64c-2.5 0-4.52 2.02-4.52 4.52 0 .35.04.7.11 1.03C7.69 6.09 4.07 4.13 1.64 1.16c-.38.65-.6 1.4-.6 2.2 0 1.52.77 2.86 1.94 3.65A4.48 4.48 0 0 1 .96 6.1v.06c0 2.13 1.52 3.91 3.54 4.31-.37.1-.76.16-1.16.16-.28 0-.55-.03-.82-.08.56 1.74 2.17 3.01 4.09 3.05A9.05 9.05 0 0 1 0 19.54a12.8 12.8 0 0 0 6.92 2.03c8.3 0 12.85-6.88 12.85-12.85 0-.2 0-.39-.01-.58A9.22 9.22 0 0 0 23 3z" /></svg>
                 </a>
                 <a href="https://facebook.com" target="_blank" rel="noopener noreferrer" aria-label="Facebook" className="hover:text-blue-700 transition">
                   <svg className="w-6 h-6" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z"/></svg>
