@@ -18,7 +18,7 @@ export default function WideVideoTestimonial() {
     <div className="flex flex-col items-center bg-white rounded-2xl shadow p-6 max-w-3xl mx-auto animate-slide-up">
       <video
         ref={videoRef}
-        src="https://player.vimeo.com/external/3195393.sd.mp4?s=6e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e&profile_id=164&oauth2_token_id=57447761" // Real person testimonial-style video
+        src="https://cdn.pixabay.com/video/2020/05/20/08/36/8567-426993993_large.mp4" // Real person testimonial-style video, Pixabay
         className="w-full rounded-xl mb-4 shadow-md pointer-events-none"
         loop
         autoPlay

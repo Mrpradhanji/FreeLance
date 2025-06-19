@@ -3,7 +3,7 @@ import logo from './assets/Trikaay_logo.png';
 import NewsletterSignup from './components/NewsletterSignup';
 import { motion, AnimatePresence } from 'framer-motion';
 import React, { useState, useEffect } from 'react';
-import VideoTestimonial from './components/VideoTestimonial';
+import StatsCounters from './components/StatsCounters';
 
 // Floating SVG Blob component
 function FloatingBlob({ className = '', style = {}, color = '#3b82f6', opacity = 0.15 }) {
@@ -187,33 +187,46 @@ export default function App() {
     {
       img: 'https://images.unsplash.com/photo-1517841905240-472988babdf9?auto=format&fit=crop&w=100&q=80',
       text: '"The doctors at Trikaay Eye Clinic changed my life. I can see clearly without glasses for the first time in 20 years!"',
-      name: 'Amit S.'
+      name: 'Amit S.',
+      rating: 5
     },
     {
       img: 'https://images.unsplash.com/photo-1508214751196-bcfd4ca60f91?auto=format&fit=crop&w=100&q=80',
       text: '"The staff made me feel comfortable and cared for. The results are amazing!"',
-      name: 'Priya M.'
+      name: 'Priya M.',
+      rating: 5
     },
     {
       img: 'https://images.unsplash.com/photo-1529626455594-4ff0802cfb7e?auto=format&fit=crop&w=100&q=80',
       text: '"Highly recommend Trikaay for anyone considering laser eye surgery!"',
-      name: 'Rahul D.'
+      name: 'Rahul D.',
+      rating: 4
     },
     // Extra testimonials for carousel
     {
       img: 'https://randomuser.me/api/portraits/men/32.jpg',
       text: '"Professional, friendly, and highly skilled team. My vision is perfect now!"',
-      name: 'Suresh K.'
+      name: 'Suresh K.',
+      rating: 5
     },
     {
       img: 'https://randomuser.me/api/portraits/women/44.jpg',
       text: '"State-of-the-art facilities and caring staff. 10/10 experience!"',
-      name: 'Meena R.'
+      name: 'Meena R.',
+      rating: 5
     }
   ];
   const [testimonialIdx, setTestimonialIdx] = useState(0);
   const nextTestimonial = () => setTestimonialIdx((testimonialIdx + 1) % testimonials.length);
   const prevTestimonial = () => setTestimonialIdx((testimonialIdx - 1 + testimonials.length) % testimonials.length);
+
+  // Auto-rotate testimonials every 6 seconds
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      nextTestimonial();
+    }, 6000);
+    return () => clearTimeout(timer);
+  }, [testimonialIdx]);
 
   return (
     <div className="relative bg-white min-h-screen flex flex-col font-sans overflow-hidden">
@@ -497,6 +510,11 @@ export default function App() {
             </div>
           </div>
         </motion.section>
+        {/* STATS COUNTERS SECTION */}
+        <section className="bg-white">
+          <h2 className="text-3xl font-bold text-center mb-2 text-blue-900">Our Impact</h2>
+          <StatsCounters />
+        </section>
         {/* Animated SVG Divider */}
         <div className="w-full overflow-hidden" aria-hidden="true">
           <svg viewBox="0 0 1440 60" fill="none" xmlns="http://www.w3.org/2000/svg" className="w-full h-8 md:h-12">
@@ -696,9 +714,9 @@ export default function App() {
           variants={sectionVariant}
         >
           <h2 className="text-3xl font-bold text-center mb-12 text-blue-900">What Our Patients Say</h2>
-          <div className="max-w-2xl mx-auto mb-8">
-            <h3 className="text-xl font-semibold text-blue-800 mb-4 text-center">Video Testimonial</h3>
-            <VideoTestimonial />
+          <div className="max-w-3xl mx-auto mb-8">
+            <h3 className="text-xl font-semibold text-blue-800 mb-4 text-center">Patient Story (Wide Video)</h3>
+            {/* Remove the import and usage of WideVideoTestimonial */}
           </div>
           <motion.div
             className="flex flex-col items-center gap-8 max-w-2xl mx-auto relative"
@@ -707,8 +725,32 @@ export default function App() {
             whileInView="visible"
             viewport={{ once: false, amount: 0.2 }}
           >
-            <motion.div className="bg-white rounded-xl shadow p-6 flex flex-col items-center w-full animate-slide-up" variants={cardVariant}>
+            <motion.div
+              key={testimonialIdx}
+              className="bg-white rounded-xl shadow p-6 flex flex-col items-center w-full animate-slide-up"
+              variants={cardVariant}
+              initial={{ opacity: 0, y: 40 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -40 }}
+              transition={{ duration: 0.6, ease: 'easeOut' }}
+            >
               <img src={testimonials[testimonialIdx].img} alt={`Patient ${testimonials[testimonialIdx].name}`} className="w-16 h-16 rounded-full mb-4 object-cover" />
+              {/* Animated star rating */}
+              <div className="flex gap-1 mb-2">
+                {[...Array(5)].map((_, i) => (
+                  <motion.svg
+                    key={i}
+                    className={`w-5 h-5 ${i < testimonials[testimonialIdx].rating ? 'text-yellow-400' : 'text-gray-200'}`}
+                    fill="currentColor"
+                    viewBox="0 0 20 20"
+                    initial={{ scale: 0.7, opacity: 0 }}
+                    animate={{ scale: 1, opacity: 1 }}
+                    transition={{ delay: 0.1 * i, type: 'spring', stiffness: 300 }}
+                  >
+                    <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.286 3.967a1 1 0 00.95.69h4.175c.969 0 1.371 1.24.588 1.81l-3.38 2.455a1 1 0 00-.364 1.118l1.287 3.966c.3.922-.755 1.688-1.54 1.118l-3.38-2.454a1 1 0 00-1.175 0l-3.38 2.454c-.784.57-1.838-.196-1.54-1.118l1.287-3.966a1 1 0 00-.364-1.118L2.049 9.394c-.783-.57-.38-1.81.588-1.81h4.175a1 1 0 00.95-.69l1.286-3.967z" />
+                  </motion.svg>
+                ))}
+              </div>
               <p className="italic text-gray-700 mb-4">{testimonials[testimonialIdx].text}</p>
               <span className="font-semibold text-blue-700">{testimonials[testimonialIdx].name}</span>
             </motion.div>
