@@ -289,19 +289,88 @@ export default function App() {
           style={{ zIndex: 2 }}
         >
           <div className="flex flex-col items-center">
-            <motion.img
-              src={logo}
-              alt="Trikaay Eye Clinic Logo"
-              className="h-10 w-auto"
-              initial={{ opacity: 0, x: -30 }}
-              animate={{
-                opacity: 1,
-                x: 0,
-                scale: scrolled ? 0.85 : 1,
-                filter: scrolled ? 'brightness(0.92)' : 'brightness(1)',
-              }}
-              transition={{ duration: 0.7, delay: 0.1, ease: 'easeOut' }}
-            />
+            <div className="flex items-center gap-2">
+              {/* Beautiful Mascot Eye Icon */}
+              <motion.svg
+                className="h-10 w-10"
+                viewBox="0 0 64 64"
+                fill="none"
+                xmlns="http://www.w3.org/2000/svg"
+                initial={{ scale: 0.9 }}
+                animate={{ scale: scrolled ? 0.8 : 1, rotate: scrolled ? -8 : 0 }}
+                transition={{ type: 'spring', stiffness: 300 }}
+                aria-label="Mascot Eye Icon"
+              >
+                {/* Soft shadow under eye */}
+                <ellipse cx="32" cy="44" rx="16" ry="6" fill="#3b82f6" fillOpacity="0.10" />
+                {/* Eye white */}
+                <ellipse cx="32" cy="32" rx="20" ry="14" fill="#fff" stroke="#3b82f6" strokeWidth="2" />
+                {/* Iris with gradient */}
+                <defs>
+                  <radialGradient id="irisGradient" cx="50%" cy="50%" r="50%">
+                    <stop offset="0%" stopColor="#60a5fa" />
+                    <stop offset="80%" stopColor="#2563eb" />
+                  </radialGradient>
+                  <radialGradient id="pupilGradient" cx="50%" cy="50%" r="50%">
+                    <stop offset="0%" stopColor="#22223b" />
+                    <stop offset="100%" stopColor="#1e293b" />
+                  </radialGradient>
+                </defs>
+                <ellipse cx="32" cy="32" rx="9" ry="9" fill="url(#irisGradient)" />
+                {/* Animated pupil */}
+                <motion.ellipse
+                  rx="4.2"
+                  ry="4.2"
+                  fill="url(#pupilGradient)"
+                  animate={{
+                    cx: [32, 35, 32, 29, 32],
+                    cy: [32, 34, 36, 34, 32],
+                  }}
+                  transition={{
+                    duration: 4,
+                    repeat: Infinity,
+                    repeatType: 'loop',
+                    ease: 'easeInOut',
+                  }}
+                  cx="32"
+                  cy="32"
+                />
+                {/* Large glossy highlight */}
+                <ellipse cx="35" cy="29" rx="2.2" ry="1.4" fill="#fff" fillOpacity="0.85" />
+                {/* Smaller highlight */}
+                <ellipse cx="30" cy="34" rx="1" ry="0.6" fill="#fff" fillOpacity="0.5" />
+                {/* Smiling arc (eyelash/eyebrow) */}
+                <path d="M22 22 Q32 16 42 22" stroke="#2563eb" strokeWidth="2.2" fill="none" strokeLinecap="round" />
+                {/* Blinking eyelid */}
+                <motion.path
+                  d="M12 32 Q32 18 52 32 Q32 46 12 32 Z"
+                  fill="#3b82f6"
+                  fillOpacity="0.10"
+                  initial={{ scaleY: 0 }}
+                  animate={{ scaleY: [0, 0, 1, 0, 0] }}
+                  transition={{
+                    duration: 6,
+                    times: [0, 0.5, 0.52, 0.54, 1],
+                    repeat: Infinity,
+                    repeatType: 'loop',
+                  }}
+                  style={{ transformOrigin: '32px 32px' }}
+                />
+              </motion.svg>
+              <motion.img
+                src={logo}
+                alt="Trikaay Eye Clinic Logo"
+                className="h-10 w-auto"
+                initial={{ opacity: 0, x: -30 }}
+                animate={{
+                  opacity: 1,
+                  x: 0,
+                  scale: scrolled ? 0.85 : 1,
+                  filter: scrolled ? 'brightness(0.92)' : 'brightness(1)',
+                }}
+                transition={{ duration: 0.7, delay: 0.1, ease: 'easeOut' }}
+              />
+            </div>
             <div className="text-xs text-gray-500 font-medium tracking-wide mt-1 ml-1">Eye care</div>
           </div>
           {/* Desktop nav */}
